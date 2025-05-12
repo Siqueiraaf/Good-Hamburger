@@ -1,7 +1,7 @@
-namespace GoodHamburger.Domain.Services;
-
 using GoodHamburger.Domain.Entities;
 using GoodHamburger.Domain.Enums;
+
+namespace GoodHamburger.Domain.Services;
 
 public class OrderService
 {
@@ -9,33 +9,25 @@ public class OrderService
     {
         decimal total = 0;
 
-        if (order.Sandwich.HasValue &&
-            PriceTable.SandwichPrices.TryGetValue(order.Sandwich.Value, out var sandwichPrice))
+        total += order.Sandwich switch
         {
-            total += sandwichPrice;
-        }
+            SandwichType.XBurguer => 5.00m,
+            SandwichType.XEgg     => 4.50m,
+            SandwichType.XBacon   => 7.00m,
+            _ => 0
+        };
 
-        foreach (var extra in order.Extras)
-        {
-            if (PriceTable.ExtrasPrices.TryGetValue(extra, out var extraPrice))
-                total += extraPrice;
-        }
+        var hasFries = order.Extras.Contains(ExtrasType.HasFries);
+        var hasSoda  = order.Extras.Contains(ExtrasType.HasSoftDrink);
 
-        return ApplyDiscount(total, order.Extras);
-    }
+        if (hasFries) total += 2.00m;
+        if (hasSoda)  total += 2.50m;
 
-    private decimal ApplyDiscount(decimal subtotal, List<ExtrasType> extras)
-    {
-        bool hasFries = extras.Contains(ExtrasType.HasFries);
-        bool hasDrink = extras.Contains(ExtrasType.HasSoftDrink);
+        // Regras de desconto
+        if (hasFries && hasSoda) return total * 0.8m;
+        if (hasSoda)             return total * 0.85m;
+        if (hasFries)            return total * 0.9m;
 
-        if (hasFries && hasDrink)
-            return subtotal * 0.8m;
-        else if (hasDrink)
-            return subtotal * 0.85m;
-        else if (hasFries)
-            return subtotal * 0.9m;
-
-        return subtotal;
+        return total;
     }
 }
