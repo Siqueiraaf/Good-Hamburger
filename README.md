@@ -62,15 +62,20 @@ O projeto segue uma abordagem modular com separação em camadas:
 
 ## 🔒 Regras de Negócio
 
-1. **Descontos por Combinação:**
-   - 3 itens → 20%
-   - Sanduíche + Refri → 15%
-   - Sanduíche + Fritas → 10%
+Combinação               | Desconto
+------------------------|---------
+Sanduíche + Fritas      | 10%
+Sanduíche + Refrigerante| 15%
+Todos os 3 itens        | 20%
 
-2. **Validações:**
-   - Cada pedido deve conter **exatamente um sanduíche**
-   - Fritas e refrigerante são **opcionais**, mas **únicos**
-   - Duplicatas resultam em erro 400 com mensagem clara
+- 🥪 **Sanduíche obrigatório:**  
+  Todo pedido deve conter **exatamente um sanduíche**. Pedidos sem sanduíche ou com múltiplos serão rejeitados.
+
+- 🍟🥤 **Fritas e refrigerante opcionais:**  
+  Ambos são **itens complementares** e **não obrigatórios**, mas se fornecidos, devem ser **únicos** — ou seja, apenas uma fritas **e/ou** um refrigerante por pedido.
+
+- 🚫 **Proibição de duplicatas:**  
+  Incluir mais de um item do mesmo tipo (ex: duas fritas ou dois refrigerantes) resultará em uma resposta de erro **HTTP 400 (Bad Request)** com uma mensagem clara indicando o problema.
 
 ---
 
@@ -121,11 +126,22 @@ dotnet watch run --project GoodHamburger.WebAPI
 ## 📌 Considerações
 
 - O repositório atual é **in-memory**, ideal para testes locais.
-- O Projeto contem um docker.
+- O Projeto contem um Arquivo Docker.
 - Pode ser substituído futuramente por um `DbContext` com Entity Framework.
 - O projeto foi estruturado visando **testabilidade**, **manutenibilidade** e **boas práticas** de arquitetura limpa.
 
 ---
+## 🐳 Uso com Docker
+A aplicação pode ser executada via contêiner Docker, facilitando testes locais, deploy e integração contínua.
+
+⚙️ Build e Execução
+
+``docker-compose up --build``
+
+### 🌐 Acesso via navegador Swagger disponível em: 
+
+``http://localhost:8080/swagger``
+
 
 ## 👨‍💻 Autor
 
