@@ -1,6 +1,4 @@
-namespace GoodHamburger.Domain.Services;
-
-using GoodHamburger.Domain.Enums;
+namespace GoodHamburger.Domain.Enums;
 
 public static class PriceTable
 {
@@ -13,7 +11,7 @@ public static class PriceTable
 
     public static readonly Dictionary<ExtrasType, decimal> ExtrasPrices = new()
     {
-        { ExtrasType.HasFries, 2.00m },
-        { ExtrasType.HasSoftDrink, 2.50m }
+        { ExtrasType.Fries, 2.00m },
+        { ExtrasType.SoftDrink, 2.50m }
     };
 }

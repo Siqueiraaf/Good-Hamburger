@@ -1,27 +1,112 @@
+using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using GoodHamburger.Application.Validators;
 using GoodHamburger.Domain.Services;
 using GoodHamburger.Infrastructure.Repositories;
+using GoodHamburger.WebAPI.Filters;
+using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace GoodHamburger.WebAPI;
 
-builder.Services.AddControllers();
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<OrderDtoValidator>();
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<OrderService>();
-builder.Services.AddSingleton<InMemoryOrderRepository>();
+        builder.Services.AddControllers(options =>
+        {
+            options.Filters.Add<GlobalExceptionFilter>();
+        });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+        builder.Services.AddFluentValidationAutoValidation();
+        builder.Services.AddValidatorsFromAssemblyContaining<OrderDtoValidator>();
 
-var app = builder.Build();
+        builder.Services.AddSingleton<OrderService>();
+        builder.Services.AddSingleton<InMemoryOrderRepository>();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+        builder.Services.AddLogging(options =>
+        {
+            options.AddConsole();
+            options.AddDebug();
+            options.SetMinimumLevel(LogLevel.Debug);
+        });
 
-app.UseHttpsRedirection();
+        builder.Services
+            .AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            })
+            .AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            });
 
-app.MapControllers();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.EnableAnnotations();
+        });
 
-app.Run();
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
+        {
+            var apiVersionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                foreach (var desc in apiVersionProvider.ApiVersionDescriptions)
+                {
+                    options.SwaggerEndpoint(
+                        $"/swagger/{desc.GroupName}/swagger.json",
+                        $"Versão {desc.GroupName.ToUpperInvariant()}"
+                    );
+                }
+            });
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/")
+                {
+                    context.Response.Redirect("/swagger");
+                    return;
+                }
+
+                await next();
+            });
+
+            var swaggerGenOptions = app.Services
+                .GetRequiredService
+                <Microsoft.Extensions.Options.IOptions
+                <Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions>
+                >().Value;
+
+            foreach (var desc in apiVersionProvider.ApiVersionDescriptions)
+            {
+                swaggerGenOptions.SwaggerGeneratorOptions.SwaggerDocs[desc.GroupName] = new OpenApiInfo
+                {
+                    Title = "Gestão de Pedidos - Good Hamburger",
+                    Version = desc.ApiVersion.ToString(),
+                    Description = "API de pedidos para o WebApp Good Hamburger",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Rafael Siqueira",
+                        Email = "dev.rafaelsiqueira@gmail.com",
+                        Url = new Uri("https://github.com/Siqueiraaf")
+                    }
+                };
+            }
+        }
+
+        app.UseHttpsRedirection();
+        app.MapControllers();
+        app.Run();
+    }
+}

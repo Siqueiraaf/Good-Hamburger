@@ -2,6 +2,8 @@ using FluentValidation;
 using GoodHamburger.Application.DTOs;
 using GoodHamburger.Domain.Enums;
 
+namespace GoodHamburger.Application.Validators;
+
 public class OrderDtoValidator : AbstractValidator<OrderDto>
 {
     public OrderDtoValidator()

@@ -1,32 +1,48 @@
 using GoodHamburger.Domain.Entities;
 using GoodHamburger.Domain.Enums;
+using GoodHamburger.Domain.Exceptions;
 
 namespace GoodHamburger.Domain.Services;
 
 public class OrderService
 {
-    public decimal CalculateTotal(Order order)
+    public static decimal CalculateTotal(Order order)
     {
-        decimal total = 0;
+        if (order == null)
+            throw new OrderNullException();
 
-        total += order.Sandwich switch
+        if (!Enum.IsDefined(typeof(SandwichType), order.Sandwich))
+            throw new InvalidSandwichException();
+
+        var duplicateExtras = order.Extras
+            .GroupBy(e => e)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateExtras.Count > 0)
+        {
+            var extrasDuplicados = string.Join(", ", duplicateExtras);
+            throw new DuplicateExtrasException(extrasDuplicados);
+        }
+
+        decimal total = order.Sandwich switch
         {
             SandwichType.XBurguer => 5.00m,
-            SandwichType.XEgg     => 4.50m,
-            SandwichType.XBacon   => 7.00m,
-            _ => 0
+            SandwichType.XEgg => 4.50m,
+            SandwichType.XBacon => 7.00m,
+            _ => throw new UndefinedSandwichException()
         };
 
-        var hasFries = order.Extras.Contains(ExtrasType.HasFries);
-        var hasSoda  = order.Extras.Contains(ExtrasType.HasSoftDrink);
+        var fries = order.Extras.Contains(ExtrasType.Fries);
+        var softDrink = order.Extras.Contains(ExtrasType.SoftDrink);
 
-        if (hasFries) total += 2.00m;
-        if (hasSoda)  total += 2.50m;
+        if (fries) total += 2.00m;
+        if (softDrink) total += 2.50m;
 
-        // Regras de desconto
-        if (hasFries && hasSoda) return total * 0.8m;
-        if (hasSoda)             return total * 0.85m;
-        if (hasFries)            return total * 0.9m;
+        if (fries && softDrink) return total * 0.8m;
+        if (softDrink) return total * 0.85m;
+        if (fries) return total * 0.9m;
 
         return total;
     }
