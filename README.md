@@ -48,12 +48,12 @@ GoodHamburger/
 ## 💰 Regras de Negócio
 
 - Lanches disponíveis:
-  - X-Burger: **R$ 5,00**
-  - X-Egg: **R$ 4,50**
-  - X-Bacon: **R$ 7,00**
+  - X-Burger: **$ 5.00**
+  - X-Egg: **$ 4.50**
+  - X-Bacon: **$ 7.00**
 - Adicionais:
-  - Fritas: **R$ 2,00**
-  - Refrigerante: **R$ 2,50**
+  - Fritas: **$ 2.00**
+  - Refrigerante: **$ 2.50**
 
 ### 🎯 Descontos
 
