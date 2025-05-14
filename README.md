@@ -125,10 +125,10 @@ dotnet watch run --project GoodHamburger.WebAPI
 
 ## 📌 Considerações
 
-- O repositório atual é **in-memory**, ideal para testes locais.
-- O Projeto contem um Arquivo Docker.
+- O repositório atual é **in-memory**.
 - Pode ser substituído futuramente por um `DbContext` com Entity Framework.
 - O projeto foi estruturado visando **testabilidade**, **manutenibilidade** e **boas práticas** de arquitetura limpa.
+- O Projeto contem um Arquivo Docker.
 
 ---
 ## 🐳 Uso com Docker
