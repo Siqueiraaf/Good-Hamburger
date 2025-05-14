@@ -1,12 +1,13 @@
 using GoodHamburger.Domain.Entities;
-using GoodHamburger.Domain.Enums;
+using GoodHamburger.Domain.Enums.Sandwich;
 using GoodHamburger.Domain.Exceptions;
+using GoodHamburger.Domain.Enums;
 
 namespace GoodHamburger.Domain.Services;
 
-public class OrderService
+public class OrderService : IOrderService
 {
-    public static decimal CalculateTotal(Order order)
+    public decimal CalculateTotal(Order order)
     {
         if (order == null)
             throw new OrderNullException();

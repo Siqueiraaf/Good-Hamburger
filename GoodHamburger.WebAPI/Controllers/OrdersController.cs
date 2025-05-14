@@ -15,9 +15,11 @@ namespace GoodHamburger.WebAPI.Controllers;
 [Produces(MediaTypeNames.Application.Json)]
 [Consumes(MediaTypeNames.Application.Json)]
 public class OrdersController(
-    InMemoryOrderRepository repository) : ControllerBase
+    InMemoryOrderRepository repository,
+    IOrderService orderService) : ControllerBase
 {
     private readonly InMemoryOrderRepository _repository = repository;
+    private readonly IOrderService _orderService = orderService;
 
     [HttpPost]
     [SwaggerOperation(
@@ -96,7 +98,7 @@ public class OrdersController(
             Extras = dto.Extras ?? []
         };
 
-        var total = OrderService.CalculateTotal(tempOrder);
+        var total = _orderService.CalculateTotal(tempOrder);
         return Ok(new { total });
     }
 }

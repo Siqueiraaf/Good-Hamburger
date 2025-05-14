@@ -1,4 +1,4 @@
-namespace GoodHamburger.Domain.Enums;
+namespace GoodHamburger.Domain.Enums.Sandwich;
 
 public enum SandwichType
 {

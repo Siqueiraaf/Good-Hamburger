@@ -1,4 +1,5 @@
 using GoodHamburger.Domain.Enums;
+using GoodHamburger.Domain.Enums.Sandwich;
 
 namespace GoodHamburger.Application.DTOs;
 

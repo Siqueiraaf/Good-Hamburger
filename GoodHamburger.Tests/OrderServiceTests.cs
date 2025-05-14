@@ -1,5 +1,6 @@
 using FluentAssertions;
 using GoodHamburger.Domain.Entities;
+using GoodHamburger.Domain.Enums.Sandwich;
 using GoodHamburger.Domain.Enums;
 using GoodHamburger.Domain.Exceptions;
 using GoodHamburger.Domain.Services;
@@ -30,7 +31,8 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
             Extras = new List<ExtrasType>()
         };
 
-        var total = OrderService.CalculateTotal(order);
+        var service = new OrderService();
+        var total = service.CalculateTotal(order);
         total.Should().Be(5.00m);
     }
 
@@ -43,7 +45,8 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
             Extras = new List<ExtrasType> { ExtrasType.Fries, ExtrasType.SoftDrink }
         };
 
-        var total = OrderService.CalculateTotal(order);
+        var service = new OrderService();
+        var total = service.CalculateTotal(order);
         // 4.5 + 2 + 2.5 = 9.00 => 20% discount = 7.20
         total.Should().Be(7.20m);
     }
@@ -57,7 +60,8 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
             Extras = new List<ExtrasType> { ExtrasType.SoftDrink }
         };
 
-        var total = OrderService.CalculateTotal(order);
+        var service = new OrderService();
+        var total = service.CalculateTotal(order);
         // 7 + 2.5 = 9.5 * 0.85 = 8.075
         total.Should().BeApproximately(8.08m, 0.01m);
     }
@@ -71,7 +75,8 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
             Extras = new List<ExtrasType> { ExtrasType.Fries }
         };
 
-        var total = OrderService.CalculateTotal(order);
+        var service = new OrderService();
+        var total = service.CalculateTotal(order);
         // 5 + 2 = 7 * 0.90 = 6.30
         total.Should().BeApproximately(6.30m, 0.01m);
     }
@@ -85,7 +90,8 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
             Extras = new List<ExtrasType> { ExtrasType.Fries, ExtrasType.Fries }
         };
 
-        Action act = () => OrderService.CalculateTotal(order);
+        var service = new OrderService();
+        Action act = () => service.CalculateTotal(order);
         act.Should().Throw<DuplicateExtrasException>()
            .WithMessage("*Fries*");
     }
@@ -93,7 +99,8 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public void Should_Throw_OrderNullException_WhenOrderIsNull()
     {
-        Action act = () => OrderService.CalculateTotal(null!);
+        var service = new OrderService();
+        Action act = () => service.CalculateTotal(null!);
         act.Should().Throw<OrderNullException>();
     }
 
@@ -106,7 +113,8 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
             Extras = []
         };
 
-        Action act = () => OrderService.CalculateTotal(order);
+        var service = new OrderService();
+        Action act = () => service.CalculateTotal(order);
         act.Should().Throw<InvalidSandwichException>();
     }
 }

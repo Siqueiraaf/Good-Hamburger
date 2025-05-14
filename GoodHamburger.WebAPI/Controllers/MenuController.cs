@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using Asp.Versioning;
+using GoodHamburger.Domain.Enums.Sandwich;
 using GoodHamburger.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;

@@ -23,6 +23,7 @@ public class Program
 
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddValidatorsFromAssemblyContaining<OrderDtoValidator>();
+        builder.Services.AddScoped<IOrderService, OrderService>();
 
         builder.Services.AddSingleton<OrderService>();
         builder.Services.AddSingleton<InMemoryOrderRepository>();

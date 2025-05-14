@@ -1,6 +1,7 @@
-namespace GoodHamburger.Domain.Entities;
-
 using GoodHamburger.Domain.Enums;
+using GoodHamburger.Domain.Enums.Sandwich;
+
+namespace GoodHamburger.Domain.Entities;
 
 public class Order
 {
