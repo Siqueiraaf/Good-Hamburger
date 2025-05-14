@@ -1,8 +1,9 @@
 using GoodHamburger.Domain.Entities;
+using GoodHamburger.Domain.Interfaces;
 
 namespace GoodHamburger.Infrastructure.Repositories;
 
-public class InMemoryOrderRepository
+public class InMemoryOrderRepository : IOrderRepository
 {
     private readonly List<Order> _orders = [];
 

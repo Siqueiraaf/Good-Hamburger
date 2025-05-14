@@ -1,14 +1,15 @@
 using FluentAssertions;
-using GoodHamburger.Domain.Entities;
-using GoodHamburger.Domain.Enums.Sandwich;
-using GoodHamburger.Domain.Enums;
-using GoodHamburger.Domain.Exceptions;
-using GoodHamburger.Domain.Services;
-using Microsoft.AspNetCore.Mvc.Testing;
 using GoodHamburger.Application.DTOs;
+using GoodHamburger.Application.Services;
+using GoodHamburger.Domain.Enums;
+using GoodHamburger.Domain.Enums.Sandwich;
+using GoodHamburger.Domain.Exceptions;
+using GoodHamburger.Domain.Interfaces;
+using Microsoft.AspNetCore.Mvc.Testing;
 using GoodHamburger.WebAPI;
-using System.Net.Http.Json;
-using System.Net;
+using Moq;
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace GoodHamburger.Tests.Services;
@@ -25,13 +26,14 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public void Should_CalculateTotal_WithOnlySandwich()
     {
-        var order = new Order
+        var order = new OrderDto
         {
             Sandwich = SandwichType.XBurguer,
             Extras = new List<ExtrasType>()
         };
 
-        var service = new OrderService();
+        var mockRepo = new Mock<IOrderRepository>();
+        var service = new OrderService(mockRepo.Object);
         var total = service.CalculateTotal(order);
         total.Should().Be(5.00m);
     }
@@ -39,58 +41,59 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public void Should_Apply_20Percent_Discount_WithFriesAndSoda()
     {
-        var order = new Order
+        var order = new OrderDto
         {
             Sandwich = SandwichType.XEgg,
             Extras = new List<ExtrasType> { ExtrasType.Fries, ExtrasType.SoftDrink }
         };
 
-        var service = new OrderService();
+        var mockRepo = new Mock<IOrderRepository>();
+        var service = new OrderService(mockRepo.Object);
         var total = service.CalculateTotal(order);
-        // 4.5 + 2 + 2.5 = 9.00 => 20% discount = 7.20
         total.Should().Be(7.20m);
     }
 
     [Fact]
     public void Should_Apply_15Percent_Discount_WithSodaOnly()
     {
-        var order = new Order
+        var order = new OrderDto
         {
             Sandwich = SandwichType.XBacon,
             Extras = new List<ExtrasType> { ExtrasType.SoftDrink }
         };
 
-        var service = new OrderService();
+        var mockRepo = new Mock<IOrderRepository>();
+        var service = new OrderService(mockRepo.Object);
         var total = service.CalculateTotal(order);
-        // 7 + 2.5 = 9.5 * 0.85 = 8.075
         total.Should().BeApproximately(8.08m, 0.01m);
     }
 
     [Fact]
     public void Should_Apply_10Percent_Discount_WithFriesOnly()
     {
-        var order = new Order
+        var order = new OrderDto
         {
             Sandwich = SandwichType.XBurguer,
             Extras = new List<ExtrasType> { ExtrasType.Fries }
         };
 
-        var service = new OrderService();
+        var mockRepo = new Mock<IOrderRepository>();
+        var service = new OrderService(mockRepo.Object);
         var total = service.CalculateTotal(order);
-        // 5 + 2 = 7 * 0.90 = 6.30
         total.Should().BeApproximately(6.30m, 0.01m);
     }
 
     [Fact]
     public void Should_Throw_DuplicateExtrasException_WhenExtrasAreDuplicated()
     {
-        var order = new Order
+        var order = new OrderDto
         {
             Sandwich = SandwichType.XEgg,
             Extras = new List<ExtrasType> { ExtrasType.Fries, ExtrasType.Fries }
         };
 
-        var service = new OrderService();
+        var mockRepo = new Mock<IOrderRepository>();
+        var service = new OrderService(mockRepo.Object);
         Action act = () => service.CalculateTotal(order);
         act.Should().Throw<DuplicateExtrasException>()
            .WithMessage("*Fries*");
@@ -99,7 +102,8 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public void Should_Throw_OrderNullException_WhenOrderIsNull()
     {
-        var service = new OrderService();
+        var mockRepo = new Mock<IOrderRepository>();
+        var service = new OrderService(mockRepo.Object);
         Action act = () => service.CalculateTotal(null!);
         act.Should().Throw<OrderNullException>();
     }
@@ -107,13 +111,14 @@ public class OrderServiceTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public void Should_Throw_InvalidSandwichException_WhenSandwichIsInvalid()
     {
-        var order = new Order
+        var order = new OrderDto
         {
             Sandwich = (SandwichType)999,
-            Extras = []
+            Extras = new List<ExtrasType>()
         };
 
-        var service = new OrderService();
+        var mockRepo = new Mock<IOrderRepository>();
+        var service = new OrderService(mockRepo.Object);
         Action act = () => service.CalculateTotal(order);
         act.Should().Throw<InvalidSandwichException>();
     }

@@ -1,9 +1,8 @@
 using System.Net.Mime;
 using Asp.Versioning;
 using GoodHamburger.Application.DTOs;
+using GoodHamburger.Application.Interfaces;
 using GoodHamburger.Domain.Entities;
-using GoodHamburger.Domain.Services;
-using GoodHamburger.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -14,11 +13,8 @@ namespace GoodHamburger.WebAPI.Controllers;
 [Route("api/v{version:apiVersion}/orders")]
 [Produces(MediaTypeNames.Application.Json)]
 [Consumes(MediaTypeNames.Application.Json)]
-public class OrdersController(
-    InMemoryOrderRepository repository,
-    IOrderService orderService) : ControllerBase
+public class OrdersController(IOrderService orderService) : ControllerBase
 {
-    private readonly InMemoryOrderRepository _repository = repository;
     private readonly IOrderService _orderService = orderService;
 
     [HttpPost]
@@ -30,13 +26,7 @@ public class OrdersController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult Create(OrderDto dto)
     {
-        var order = new Order
-        {
-            Sandwich = dto.Sandwich,
-            Extras = dto.Extras ?? []
-        };
-
-        _repository.Add(order);
+        var order = _orderService.Create(dto);
         return Ok(order);
     }
 
@@ -47,7 +37,7 @@ public class OrdersController(
     )]
     [SwaggerResponse(StatusCodes.Status200OK, "Lista de pedidos retornada com sucesso", typeof(IEnumerable<Order>))]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult GetAll() => Ok(_repository.GetAll());
+    public IActionResult GetAll() => Ok(_orderService.GetAll());
 
     [HttpPut("{id}")]
     [SwaggerOperation(
@@ -60,13 +50,8 @@ public class OrdersController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult Update(Guid id, OrderDto dto)
     {
-        var order = _repository.GetById(id);
+        var order = _orderService.Update(id, dto);
         if (order is null) return NotFound();
-
-        order.Sandwich = dto.Sandwich;
-        order.Extras = dto.Extras ?? [];
-
-        _repository.Update(order);
         return Ok(order);
     }
 
@@ -79,7 +64,7 @@ public class OrdersController(
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public IActionResult Delete(Guid id)
     {
-        _repository.Delete(id);
+        _orderService.Delete(id);
         return NoContent();
     }
 
@@ -92,13 +77,7 @@ public class OrdersController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult CalculateTotal(OrderDto dto)
     {
-        var tempOrder = new Order
-        {
-            Sandwich = dto.Sandwich,
-            Extras = dto.Extras ?? []
-        };
-
-        var total = _orderService.CalculateTotal(tempOrder);
+        var total = _orderService.CalculateTotal(dto);
         return Ok(new { total });
     }
 }

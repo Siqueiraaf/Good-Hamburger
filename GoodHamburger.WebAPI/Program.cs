@@ -2,8 +2,10 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using GoodHamburger.Application.Interfaces;
+using GoodHamburger.Application.Services;
 using GoodHamburger.Application.Validators;
-using GoodHamburger.Domain.Services;
+using GoodHamburger.Domain.Interfaces;
 using GoodHamburger.Infrastructure.Repositories;
 using GoodHamburger.WebAPI.Filters;
 using Microsoft.OpenApi.Models;
@@ -16,18 +18,22 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        // MVC + Filtros
         builder.Services.AddControllers(options =>
         {
             options.Filters.Add<GlobalExceptionFilter>();
         });
 
+        // FluentValidation
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddValidatorsFromAssemblyContaining<OrderDtoValidator>();
+
+        // Injeção de dependências
         builder.Services.AddScoped<IOrderService, OrderService>();
+        builder.Services.AddScoped<IMenuService, MenuService>();
+        builder.Services.AddSingleton<IOrderRepository, InMemoryOrderRepository>();
 
-        builder.Services.AddSingleton<OrderService>();
-        builder.Services.AddSingleton<InMemoryOrderRepository>();
-
+        // Logging
         builder.Services.AddLogging(options =>
         {
             options.AddConsole();
@@ -35,6 +41,7 @@ public class Program
             options.SetMinimumLevel(LogLevel.Debug);
         });
 
+        // API Versioning
         builder.Services
             .AddApiVersioning(options =>
             {
@@ -49,6 +56,7 @@ public class Program
                 options.SubstituteApiVersionInUrl = true;
             });
 
+        // Swagger
         builder.Services.AddSwaggerGen(options =>
         {
             options.EnableAnnotations();
@@ -84,10 +92,8 @@ public class Program
             });
 
             var swaggerGenOptions = app.Services
-                .GetRequiredService
-                <Microsoft.Extensions.Options.IOptions
-                <Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions>
-                >().Value;
+                .GetRequiredService<Microsoft.Extensions.Options.IOptions<Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions>>()
+                .Value;
 
             foreach (var desc in apiVersionProvider.ApiVersionDescriptions)
             {
